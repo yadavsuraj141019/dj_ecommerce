@@ -1,0 +1,45 @@
+{% extends "ecomm/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+</head>
+<body>
+
+    <div class="signup-container">
+        <h2>Sign Up</h2>
+        {% if messages %}
+        {% for message in messages %}
+            <p {% if message.tags %} class="alert alert-{{message.tags}} mb-5" {% endif %}>{{message}}</p>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            {% for fm in form %}
+                <div class="form-group">
+                {{fm.label_tag}} {{fm}} <small class="text-warning">{{fm.errors|striptags}}</small>
+                </div>
+            {% endfor %}
+            <input type="submit" value="Submit" class="btn btn-primary">
+            {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <p class="alert alert-danger my-3">{{error}}</p>
+            {% endfor %}
+        {% endif %}
+        </form>
+    </div>
+
+</body>
+</html>
+
+
+{% endblock %}  

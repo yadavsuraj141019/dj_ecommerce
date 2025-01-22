@@ -1,0 +1,77 @@
+{% extends "ecomm/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+    
+    .product-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 20px;
+    }
+    
+    .product-item {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .product-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    .product-item h2 {
+        font-size: 1.5rem;
+    }
+
+    .product-item p {
+        font-size: 1rem;
+        color: #555;
+    }
+
+    .product-item a {
+        display: inline-block;
+        margin-top: 10px;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    .product-item a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Listing</title>
+</head>
+<body>
+    <h1>Product List</h1>
+    
+    <div class="product-list">
+        {% for product in products %}
+            <div class="product-item">
+                <h2><a href="{% url 'product_detail' product.id %}">{{ product.product_name }}</a></h2>
+                <p>{{ product.product_description }}</p>
+                <p>Price: ${{ product.product_price }}</p>
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
+                {% endif %}
+                <a href="{% url 'product_detail' product.id %}">View Details</a>
+            </div>
+        {% empty %}
+            <p>No products available.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
+
+{% endblock %}  

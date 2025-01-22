@@ -1,0 +1,40 @@
+{% extends "ecomm/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+{% comment %} {% if messages %}
+  <div class="alert alert-danger">
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %} {% endcomment %}
+
+<h2>Checkout</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    
+    <h3>Select Shipping Method</h3>
+    {{ shipping_form.as_p }}
+
+    <h3>Select Payment Method</h3>
+    {{ payment_form.as_p }}
+
+    {% comment %} <h3>Billing Address</h3>
+    {{ billing_form.as_p }} {% endcomment %}
+
+    {% comment %} <h3>Base Total Price: ${{ base_total_price }}</h3>
+
+    <h3>Shipping Cost: ${{ shipping_form.instance.shipping_method.cost }}</h3>
+
+    <h3>Total Price: ${{ shipping_form.instance.get_total_price }}</h3> {% endcomment %}
+
+    <button type="submit">Place Order</button>
+</form>
+
+<p>Total Price: ${{ total_price }}</p>
+
+{% endblock %}  

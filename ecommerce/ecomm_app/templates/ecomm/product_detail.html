@@ -1,0 +1,94 @@
+{% extends "ecomm/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+    <style>
+        .product-container {
+            display: flex;
+            align-items: center;  /* Aligns content vertically in the center */
+            justify-content: space-between;  /* Adds space between image and content */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .product-image {
+            flex: 1;  /* Ensures the image takes up equal space */
+            max-width: 500px;  /* Limit image width */
+        }
+        
+        .product-image img {
+            width: 100%;  /* Make sure image is responsive */
+            height: auto;
+            object-fit: contain;  /* Maintains aspect ratio */
+        }
+        
+        .product-content {
+            flex: 2;  /* Content takes up twice as much space as the image */
+            max-width: 600px;  /* Limit the content width */
+            padding-left: 20px;  /* Add padding between image and content */
+        }
+        
+        .product-content h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .product-content p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .product-content strong {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #d4edda;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 5px;
+        }
+    </style>
+   
+    <div class="product-detail-container">
+        <!-- Left side: Image -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-success">
+                    {{ message|safe }}
+                </div>  
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="product-image">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/400x400?text=No+Image" alt="No image available">
+            {% endif %}
+        </div>
+
+        <!-- Right side: Content -->
+        <div class="product-content">
+            <h1>{{ product.product_name }}</h1>
+            <p>{{ product.product_description }}</p>
+            <p class="price">$ {{ product.product_price }}</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit">Add to Cart</button>
+            </form>
+
+            <a href="/product_list/" class="back-to-list">Back to Product List</a>
+        </div>
+    </div>
+
+
+{% endblock %}

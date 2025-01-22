@@ -1,0 +1,13 @@
+{% extends "ecomm/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<h2>Order Confirmation</h2>
+<p>Order Number: {{ order.id }}</p>
+<p>Shipping Method: {{ order.shipping_method }}</p>
+<p>Payment Method: {{ order.payment_method }}</p>
+<p>Total Price: ${{ order.total_price }}</p>
+
+{% endblock %} 
