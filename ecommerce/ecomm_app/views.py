@@ -1,13 +1,14 @@
 from django.shortcuts import render,HttpResponse,HttpResponseRedirect,redirect
 from django.shortcuts import render, get_object_or_404
-from .models import Product, Cart, CartItem, ShippingMethod, ShippingAddress, Order, PaymentMethod
-from .forms import SignUpForm, LoginForm
+from .models import Product, Cart, CartItem,Order, Address,ShippingMethod, PaymentMethod
+from .forms import SignUpForm, LoginForm,AddressForm,ShippingMethodForm, PaymentMethodForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
-from django.http import Http404
+from decimal import Decimal
+from django.http import Http404,HttpResponse
 from django.contrib.auth.decorators import login_required
-from .forms import ShippingAddressForm, OrderForm, ShippingMethodForm, PaymentMethodForm
+from django.db import transaction
 
 # Home Page View Function
 
@@ -168,53 +169,6 @@ def update_cart(request, item_id, action):
 #     return cart
 
 
-def checkout_view(request):
-    if request.method == 'POST':
-        shipping_form = ShippingMethodForm(request.POST)
-        payment_form = PaymentMethodForm(request.POST)
-
-        if shipping_form.is_valid() and payment_form.is_valid():
-            shipping_method = shipping_form.cleaned_data['shipping_method']
-            payment_method = payment_form.cleaned_data['payment_method']
-            
-            # Assume you already have a Cart or Order object to get items from
-            order = Order.objects.create(
-                user=request.user,
-                shipping_method=shipping_method,
-                payment_method=payment_method
-            )
-
-            # Add items to the order
-            # This could come from a shopping cart in your session or a cart model
-            # For example, adding items to the order
-            order.items.add(*request.session.get('cart_items', []))  # cart_items should be a list of item ids
-            order.calculate_total()  # Calculate total price including shipping
-            
-            # Handle payment logic (this could involve redirecting to a payment gateway)
-            # For simplicity, assume payment is confirmed immediately
-            return redirect('order_success', order_id=order.id)
-    else:
-        shipping_form = ShippingMethodForm()
-        payment_form = PaymentMethodForm()
-
-    return render(request, 'ecomm/checkout.html', {
-        'shipping_form': shipping_form,
-        'payment_form': payment_form,
-        'total_price': 0  # Will be updated once shipping is added
-    })
-
-# Order Success View Function
-
-
-def order_success(request, order_id):
-    """
-    Success page after an order has been placed.
-    """
-    order = Order.objects.get(id=order_id)
-    return render(request, 'order_success.html', {'order': order})
-
-
-
 # Remove From Cart View Function
 
 def remove_from_cart(request, item_id):
@@ -229,3 +183,90 @@ def remove_from_cart(request, item_id):
     
     return redirect('cart')
 
+@login_required
+def checkout(request):
+    # Fetch the user's active cart
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+    else:
+        # For guest users, create a cart associated with `None` as the user
+        cart = Cart.objects.filter(user=None).first()
+
+    shipping_methods = ShippingMethod.objects.all()
+    payment_methods = PaymentMethod.objects.all()
+
+    if not cart or cart.items.count() == 0:
+        return redirect('cart')  # Redirect to cart if it's empty
+
+    # Calculate the total price of the products in the cart
+    total_price = sum(item.total_price() for item in cart.items.all())
+
+    if request.method == 'POST':
+        # Process billing and shipping addresses
+        billing_address = Address.objects.create(
+            user=request.user if request.user.is_authenticated else None,  # Use the logged-in user, or None for guest
+            first_name=request.POST.get('first_name'),
+            last_name=request.POST.get('last_name'),
+            street_address=request.POST.get('street_address'),
+            city=request.POST.get('city'),
+            state=request.POST.get('state'),
+            zip_code=request.POST.get('zip_code'),
+            country=request.POST.get('country'),
+            phone=request.POST.get('phone')
+        )
+
+        shipping_address = Address.objects.create(
+            user=request.user if request.user.is_authenticated else None,  # Use the logged-in user, or None for guest
+            first_name=request.POST.get('shipping_first_name'),
+            last_name=request.POST.get('shipping_last_name'),
+            street_address=request.POST.get('shipping_street_address'),
+            city=request.POST.get('shipping_city'),
+            state=request.POST.get('shipping_state'),
+            zip_code=request.POST.get('shipping_zip_code'),
+            country=request.POST.get('shipping_country'),
+            phone=request.POST.get('shipping_phone')
+        )
+
+        # Get the selected shipping method from the POST data
+        shipping_method_id = request.POST.get('shipping_method')
+        shipping_method = ShippingMethod.objects.get(id=shipping_method_id)
+
+        # Get the selected payment method from the POST data
+        payment_method_id = request.POST.get('payment_method')
+        payment_method = PaymentMethod.objects.get(id=payment_method_id)
+
+        # Calculate total price (base price + shipping cost)
+        total_price += shipping_method.cost  # Add the shipping cost to the total price
+
+        # Create the order
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,  # Use the logged-in user, or None for guest
+            total_price=total_price,
+            billing_address=billing_address,
+            shipping_address=shipping_address,
+            shipping_method=shipping_method,
+            payment_method=payment_method,
+        )
+
+        # Clear the cart after placing the order
+        cart.items.all().delete()
+
+        # Redirect to the order success page
+        return redirect('order_success', order_id=order.id)
+
+    return render(request, 'ecomm/checkout.html', {
+        'cart': cart,
+        'shipping_methods': shipping_methods,  # Pass shipping methods to template
+        'payment_methods': payment_methods,    # Pass payment methods to template
+        'total_price': total_price,  # Pass the total price (including cart items)
+    })
+
+
+@login_required
+def order_success(request, order_id):
+    
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    return render(request, 'ecomm/order_success.html', {
+        'order': order
+    })

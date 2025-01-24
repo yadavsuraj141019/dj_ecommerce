@@ -11,3 +11,4 @@ admin.site.register(CartItem)
 admin.site.register(ShippingMethod)
 admin.site.register(PaymentMethod)
 admin.site.register(Order)
+

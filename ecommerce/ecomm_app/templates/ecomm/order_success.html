@@ -4,10 +4,24 @@
 
 {% block content %}
 
-<h2>Order Confirmation</h2>
-<p>Order Number: {{ order.id }}</p>
-<p>Shipping Method: {{ order.shipping_method }}</p>
-<p>Payment Method: {{ order.payment_method }}</p>
-<p>Total Price: ${{ order.total_price }}</p>
+<div style="max-width: 800px; margin: 30px auto; padding: 20px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px; font-family: Arial, sans-serif;">
 
-{% endblock %} 
+    <!-- Thank You Message -->
+    <h2 style="color: #4CAF50; text-align: center; font-size: 2em; margin-bottom: 20px;">Thank you for your order!</h2>
+    <p style="font-size: 1.1em; color: #333; text-align: center; line-height: 1.6; margin-bottom: 30px;">Your order has been placed successfully. We are processing it, and you will receive a confirmation email shortly.</p>
+
+    <!-- Order Summary Section -->
+    <h3 style="color: #333; font-size: 1.5em; text-align: center; margin-bottom: 15px;">Order Summary</h3>
+    
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; border: 1px solid #ddd; margin-top: 20px;">
+        <p style="font-size: 1.1em; line-height: 1.6; margin: 10px 0; color: #333;">
+            <strong>Order ID:</strong> {{ order.id }}
+        </p>
+        <p style="font-size: 1.1em; line-height: 1.6; margin: 10px 0; color: #333;">
+            <strong>Total Price:</strong> ${{ order.total_price }}
+        </p>
+    </div>
+    <a href="{% url 'home' %}" style="display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: #ffffff; font-size: 1.1em; text-decoration: none; border-radius: 6px; margin-top: 30px; transition: background-color 0.3s ease; text-align: center;">Return to Homepage</a>
+</div>
+
+{% endblock %}

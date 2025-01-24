@@ -22,7 +22,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',views.home),
+    path('',views.home,name='home'),
     path('product_detail/<int:id>/',views.product_detail,name='product_detail'),
     path('product_list/',views.product_list,name='product_list'),
     path('signup/', views.signup, name='signup'),
@@ -30,9 +30,10 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('cart/', views.cart_view, name='cart'),
     path('update_cart/<int:item_id>/<str:action>/', views.update_cart, name='update_cart'),
-    path('checkout/', views.checkout_view, name='checkout'),
     path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
-    path('order-success/<int:order_id>/', views.order_success, name='order_success'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order_success/<int:order_id>/', views.order_success, name='order_success'),
+
 ]
 
 if settings.DEBUG:

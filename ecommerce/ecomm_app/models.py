@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404
+
 
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
@@ -17,10 +19,20 @@ class Product(models.Model):
 class Cart(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="cart", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, default='open')
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Cart for {self.user.username}" if self.user else "Anonymous Cart"
+    
+    # def clear_cart(self):
+    #     """Clears all items in the cart."""
+    #     self.items.all().delete()  # This deletes all CartItem entries related to this cart
+
+    def total_price(self):
+        """Calculate the total price of all items in the cart."""
+        return sum(item.product.price * item.quantity for item in self.items.all())
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
@@ -34,73 +46,56 @@ class CartItem(models.Model):
         return self.product.product_price * self.quantity
     
 
-class ShippingMethod(models.Model):
-    STANDARD = 'standard'
-    EXPRESS = 'express'
-
-    SHIPPING_METHOD_CHOICES = [
-        (STANDARD, 'Standard'),
-        (EXPRESS, 'Express'),
-    ]
-
-    shipping_method = models.CharField(
-        max_length=20,
-        choices=SHIPPING_METHOD_CHOICES,
-        default=STANDARD
-    )
-
-    def __str__(self):
-        return self.shipping_method
-    
-
-class ShippingAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255, blank=True, null=True)
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses", null=True, blank=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
+    zip_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
 
     def __str__(self):
-        return f"{self.user.username}'s Shipping Address"
+        return f"{self.first_name} {self.last_name} - {self.street_address}"
     
+class ShippingMethod(models.Model):
+    name = models.CharField(max_length=100)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def __str__(self):
+        return f"{self.name} - ${self.cost}"
+
+# Payment Method Model
 class PaymentMethod(models.Model):
-    payment_method = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
-    
 
-# class BillingAddress(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     address_line1 = models.CharField(max_length=255)
-#     address_line2 = models.CharField(max_length=255, blank=True, null=True)
-#     city = models.CharField(max_length=100)
-#     state = models.CharField(max_length=100)
-#     postal_code = models.CharField(max_length=20)
-#     country = models.CharField(max_length=100)
-
-#     def __str__(self):
-#         return f"{self.user.username}'s Billing Address"
-    
 class Order(models.Model):
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    billing_address = models.ForeignKey(Address, related_name="billing_address", on_delete=models.SET_NULL, null=True)
+    shipping_address = models.ForeignKey(Address, related_name="shipping_address", on_delete=models.SET_NULL, null=True)
     shipping_method = models.ForeignKey(ShippingMethod, on_delete=models.SET_NULL, null=True)
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True)
-    # billing_address = models.ForeignKey(BillingAddress, on_delete=models.SET_NULL, null=True)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('Completed', 'Completed')])
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Order {self.id} - User: {self.user.username}"
-
-    def calculate_total(self):
-        # Calculate the total price of items in the order
-        item_total = sum(item.price for item in self.items.all())
-        shipping_total = self.shipping_method.cost if self.shipping_method else 0
-        self.total_price = item_total + shipping_total
+    def update_total_price(self):
+        """Update the total price based on the shipping method."""
+        self.total_price += self.shipping_method.cost
         self.save()
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"
+    
+def order_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    return render(request, 'order_success.html', {
+        'order': order,
+        'shipping_method': order.shipping_method,
+        'payment_method': order.payment_method,
+    })

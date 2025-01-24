@@ -4,37 +4,82 @@
 
 {% block content %}
 
-{% comment %} {% if messages %}
-  <div class="alert alert-danger">
-    {% for message in messages %}
-      <p>{{ message }}</p>
-    {% endfor %}
-  </div>
-{% endif %} {% endcomment %}
-
-<h2>Checkout</h2>
-
-<form method="POST">
+<form method="post">
     {% csrf_token %}
     
-    <h3>Select Shipping Method</h3>
-    {{ shipping_form.as_p }}
+    <!-- Billing Address Fields -->
+    <h3>Billing Address</h3>
+    <label for="first_name">First Name</label>
+    <input type="text" name="first_name" id="first_name" required><br>
 
-    <h3>Select Payment Method</h3>
-    {{ payment_form.as_p }}
+    <label for="last_name">Last Name</label>
+    <input type="text" name="last_name" id="last_name" required><br>
 
-    {% comment %} <h3>Billing Address</h3>
-    {{ billing_form.as_p }} {% endcomment %}
+    <label for="street_address">Street Address</label>
+    <input type="text" name="street_address" id="street_address" required><br>
 
-    {% comment %} <h3>Base Total Price: ${{ base_total_price }}</h3>
+    <label for="city">City</label>
+    <input type="text" name="city" id="city" required><br>
 
-    <h3>Shipping Cost: ${{ shipping_form.instance.shipping_method.cost }}</h3>
+    <label for="state">State</label>
+    <input type="text" name="state" id="state" required><br>
 
-    <h3>Total Price: ${{ shipping_form.instance.get_total_price }}</h3> {% endcomment %}
+    <label for="zip_code">Zip Code</label>
+    <input type="text" name="zip_code" id="zip_code" required><br>
+
+    <label for="country">Country</label>
+    <input type="text" name="country" id="country" required><br>
+
+    <label for="phone">Phone</label>
+    <input type="text" name="phone" id="phone" required><br>
+
+    <!-- Shipping Address Fields -->
+    <h3>Shipping Address</h3>
+    <label for="shipping_first_name">First Name</label>
+    <input type="text" name="shipping_first_name" id="shipping_first_name" required><br>
+
+    <label for="shipping_last_name">Last Name</label>
+    <input type="text" name="shipping_last_name" id="shipping_last_name" required><br>
+
+    <label for="shipping_street_address">Street Address</label>
+    <input type="text" name="shipping_street_address" id="shipping_street_address" required><br>
+
+    <label for="shipping_city">City</label>
+    <input type="text" name="shipping_city" id="shipping_city" required><br>
+
+    <label for="shipping_state">State</label>
+    <input type="text" name="shipping_state" id="shipping_state" required><br>
+
+    <label for="shipping_zip_code">Zip Code</label>
+    <input type="text" name="shipping_zip_code" id="shipping_zip_code" required><br>
+
+    <label for="shipping_country">Country</label>
+    <input type="text" name="shipping_country" id="shipping_country" required><br>
+
+    <label for="shipping_phone">Phone</label>
+    <input type="text" name="shipping_phone" id="shipping_phone" required><br>
+
+    <!-- Shipping Method Dropdown -->
+    <h3>Shipping Method</h3>
+    <label for="shipping_method">Select Shipping Method</label>
+    <select name="shipping_method" id="shipping_method" required>
+        <option value="">-- Select Shipping Method --</option>
+        {% for method in shipping_methods %}
+            <option value="{{ method.id }}">{{ method.name }} - ${{ method.cost }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Payment Method Dropdown -->
+    <h3>Payment Method</h3>
+    <label for="payment_method">Select Payment Method</label>
+    <select name="payment_method" id="payment_method" required>
+        <option value="">-- Select Payment Method --</option>
+        {% for method in payment_methods %}
+            <option value="{{ method.id }}">{{ method.name }}</option>
+        {% endfor %}
+    </select><br>
 
     <button type="submit">Place Order</button>
 </form>
 
-<p>Total Price: ${{ total_price }}</p>
-
-{% endblock %}  
+{% endblock %}
