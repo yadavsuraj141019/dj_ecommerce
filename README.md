@@ -1,1 +1,7 @@
-# dj_ecommerce
+![home1](https://github.com/user-attachments/assets/3051f5f5-3622-4ab0-94bf-9e7833f32aca)
+![all_product](https://github.com/user-attachments/assets/f7a29aae-3634-461d-87ba-a39ea1c2fc5c)
+![cart](https://github.com/user-attachments/assets/4efa52a3-f70f-4878-b79c-1f06c3cd101d)
+![checkout](https://github.com/user-attachments/assets/c370c885-64d8-4723-a0e5-626a479246eb)
+![thankyou](https://github.com/user-attachments/assets/2778d091-4a70-4441-9a4c-8d633ca1e073)
+![signup1](https://github.com/user-attachments/assets/aaea578f-b874-4168-af69-f8abb5626acd)
+![login1](https://github.com/user-attachments/assets/8c8f734a-773e-4b33-999a-4f3768880ff3)
